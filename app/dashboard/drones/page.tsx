@@ -1,17 +1,24 @@
 import axios from "axios";
 import DronesList from "./components/list";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DronesPage() {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    const res = await axios.get(`${API_URL}/drones/`, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        // cache: 'no-store', // Uncomment to disable caching
-    });
-
-    const drones =  res.data
+    let drones = [];
+    try {
+        const res = await axios.get(`${API_URL}/drones/`, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            // cache: 'no-store', // Uncomment to disable caching
+        });
+        drones = res.data;
+    } catch (error) {
+        console.error('Failed to fetch drones:', error);
+        // Handle error, perhaps show empty list or error message
+    }
 
     // DEBUG
     console.log('Drones fetch response:', drones);
