@@ -46,6 +46,19 @@ export async function createSession({userId, token}: SessionPayload) {
 }
 
 
+// Verify the session cookie and return the payload
+export async function getSession() {
+  const session = (await cookies()).get('session')?.value
+  const payload = await decrypt(session)
+ 
+  if (!session || !payload) {
+    return null
+  }
+ 
+  return payload as SessionPayload
+}
+
+
 // Update the session cookie to extend its expiration
 export async function updateSession() {
   const session = (await cookies()).get('session')?.value
