@@ -9,30 +9,16 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import AddCompanyDialog from "./add-company-dialog";
+import AddDrone from "./add-drone";
 
-interface Company {
-    id: string;
-    name: string;
-    isActive: boolean;
-    industry: string;
-    nb_users?: number;
-    created_at: Date;
-    updated_at: Date;
-}
-
-interface CompaniesListProps {
-    companies: Company[];
-}
-
-export default function CompaniesHeader({ companies = [] }: CompaniesListProps) {
+export default function DroneHeader() {
 
     return(
         <div className="flex items-start justify-between " >
             <div className="flex">
                 <Input
                     type="text"
-                    placeholder="Rechercher une entreprise..."
+                    placeholder="Rechercher une drone..."
                     className="mb-4 mr-4"
                 />
                 
@@ -41,7 +27,7 @@ export default function CompaniesHeader({ companies = [] }: CompaniesListProps) 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="mb-4">
-                                <Icon icon="mdi:filter-variant" className="mr-2" />
+                                <Icon icon="mdi:filter-variant" className="" />
                                 Trier par
                             </Button>
                         </DropdownMenuTrigger>
@@ -60,7 +46,7 @@ export default function CompaniesHeader({ companies = [] }: CompaniesListProps) 
                     <Icon icon="clarity:pop-out-line" className="" />
                     Exporter
                 </Button>
-                <AddCompanyDialog />
+                <AddDrone />
             </div>
 
         </div>

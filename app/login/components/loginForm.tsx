@@ -16,8 +16,14 @@ import { Spinner } from "@/components/ui/loader";
 import { toast } from "sonner";
 
 export default function LoginForm() {
-    const [email, setEmail] = useState('rubo@ss.org');
-    const [password, setPassword] = useState('2025-SLATER-JAN');
+    const [email, setEmail] = useState('admincentral@ss.com');
+    const [password, setPassword] = useState("je suis l'admin central");
+
+    // email: admincentral@ss.com
+    // password: je suis l'admin central
+
+    // email : root@maska.com
+    // Password: PAtr02
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -59,7 +65,8 @@ export default function LoginForm() {
             }
         } catch (error) {
             // console.error('Login failed', error);
-            toast.error("Échec de la connexion. Veuillez vérifier vos identifiants.");
+            console.log(error);
+            toast.error("Échec connexion. Veuillez vérifier vos identifiants.");
         }finally {
             setLoading(false);
         }

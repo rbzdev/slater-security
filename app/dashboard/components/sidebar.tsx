@@ -67,12 +67,12 @@ const items = [
     {
         title: "Drones",
         url: "/dashboard/drones",
-        icon: "lucide:drone",
+        icon: "tabler:drone",
     },
 
     {
         title: "Agents",
-        url: "#",
+        url: "/dashboard/agents",
         icon: "heroicons-outline:user-group",
     },
 ]

@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import AddCompanyDialog from "./add-company-dialog";
+import AddAgent from "./add-agent";
 
 interface Company {
     id: string;
@@ -22,17 +22,17 @@ interface Company {
 }
 
 interface CompaniesListProps {
-    companies: Company[];
+    companies?: Company[];
 }
 
-export default function CompaniesHeader({ companies = [] }: CompaniesListProps) {
+export default function AgentsHeader({ companies = [] }: CompaniesListProps) {
 
     return(
         <div className="flex items-start justify-between " >
             <div className="flex">
                 <Input
                     type="text"
-                    placeholder="Rechercher une entreprise..."
+                    placeholder="Rechercher un agent..."
                     className="mb-4 mr-4"
                 />
                 
@@ -60,7 +60,7 @@ export default function CompaniesHeader({ companies = [] }: CompaniesListProps) 
                     <Icon icon="clarity:pop-out-line" className="" />
                     Exporter
                 </Button>
-                <AddCompanyDialog />
+                <AddAgent />
             </div>
 
         </div>

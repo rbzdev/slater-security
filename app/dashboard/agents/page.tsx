@@ -1,51 +1,50 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useCompaniesStore } from '@/lib/Stores/companies-store';
 import axios from "axios";
 import { getSession } from "@/lib/session";
+import { useAgentsStore } from '@/lib/Stores/agents-store';
 
 
-// UI Components
-import CompaniesList from "./components/list";
-import CompaniesHeader from "./components/header";
+import AgentHeader from "./components/header";
+import AgentsList from "./components/agents-list";
 import { ListSkeleton } from "@/components/ui/skeleton";
 import { Icon } from "@iconify/react";
 import { Button } from "@/components/ui/button";
 
-export default function CompaniesPage() {
-  const { companies, setCompanies, loading, setLoading, error, setError } = useCompaniesStore();
-  const [fetchingCompanies, setFetchingCompanies] = useState(true);
+export default function AgentsPage() {
+  const { agents, setAgents, loading, setLoading, error, setError } = useAgentsStore();
+  const [fetchingAgents, setFetchingAgents] = useState(true);
 
-  // // DEBUG
-  // console.log("Companies in store:", companies);
-
-  const fetchCompanies = async () => {
-    setFetchingCompanies(true);
+  const fetchAgents = async () => {
+    setFetchingAgents(true);
     setError(null);
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL;
       const session = await getSession();
-      const res = await axios.get(`${API_URL}/tenants/list/`, {
+      const res = await axios.get(`${API_URL}/accounts/manager/`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.token}`
         },
       });
-      setCompanies(res.data);
+      setAgents(res.data);
+
+      // DEBUG
+      console.log("Fetched agents:", res.data);
     } catch (err) {
-      console.error('Failed to fetch companies:', err);
-      setError('Failed to fetch companies');
+      console.error('Failed to fetch agents:', err);
+      setError('Failed to fetch agents');
     } finally {
-      setFetchingCompanies(false);
+      setFetchingAgents(false);
     }
   };
 
   useEffect(() => {
-    fetchCompanies();
+    fetchAgents();
   }, []);
 
-  if (fetchingCompanies) {
+  if (fetchingAgents) {
     return (
       <div className="p-6 relative">
         <div className="flex items-center justify-between w-full h-22 animate-pulse">
@@ -61,12 +60,12 @@ export default function CompaniesPage() {
   if (error) {
     return (
       <div className="m-6 h-120 flex flex-col items-center justify-center">
-        <Icon icon="tabler:building-off" className="text-7xl text-red-500 dark:text-red-300 mb-4" />
+        <Icon icon="ph:empty" className="text-7xl text-red-500 dark:text-red-300 mb-4" />
         {/* <p className="text-red-600"> {error} </p> */}
-        <p className="text-muted-foreground"> Une erreur est survenue lors du chargement des entreprises. </p>
+        <p className="text-muted-foreground"> Une erreur est survenue lors du chargement des agents. </p>
 
-        <Button variant="default" className="mt-4" onClick={fetchCompanies}>
-          <span>Actualiser les entreprise</span>
+        <Button variant="default" className="mt-4" onClick={fetchAgents}>
+          <span>Actualiser les agents</span>
           <Icon icon="icon-park-outline:refresh" />
         </Button>
       </div>
@@ -75,8 +74,8 @@ export default function CompaniesPage() {
 
   return (
     <div className="p-4">
-      <CompaniesHeader companies={companies} />
-      <CompaniesList companies={companies} />
+      <AgentHeader />
+      <AgentsList agents={agents} />
     </div>
   );
 }

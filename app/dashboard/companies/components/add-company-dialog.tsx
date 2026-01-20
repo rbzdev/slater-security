@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from 'react';
+import { getClientSession } from '@/lib/actions/user';
+import { toast } from 'sonner';
+import { useCompaniesStore } from '@/lib/Stores/companies-store';
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -26,26 +29,67 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { getClientSession } from '@/lib/actions/user';
-import { toast } from 'sonner';
 
-export default function AddCompanyDialog() {
-    const [name, setName] = useState('Kamoa Cooper');
-    const [industry, setIndustry] = useState('Mining Company');
+import { Spinner } from '@/components/ui/loader';
+
+interface AddCompanyDialogProps {
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+}
+
+export default function AddCompanyDialog({ open, onOpenChange }: AddCompanyDialogProps) {
+    const [name, setName] = useState('');
+    const [industry, setIndustry] = useState('');
     const [nb_users, setNbUsers] = useState(0);
     const [adress, setAdress] = useState('123, Avenue des Poids Lourds, Lubumbashi');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('email@example.com');
-    const [open, setOpen] = useState(false);
+
+    const [loading, setLoading] = useState(false);
+
+    const [internalOpen, setInternalOpen] = useState(false);
+    const isControlled = open !== undefined;
+    const currentOpen = isControlled ? open : internalOpen;
+    const currentOnOpenChange = isControlled ? onOpenChange || (() => {}) : setInternalOpen;
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 
     // const token = clientSession.;
 
     // DEBUG
     // console.log('Token in AddCompanyDialog:', clientSession);
 
+    const handleCheck = () => {
+        if (name === '') {
+            toast.info("Le nom de l'entreprise est requis");
+            return false;
+        }
+        if (industry === '') {
+            toast.info('Le domaine d\'activité est requis');
+            return false;
+        }
+        // if (nb_users <= 0) {
+        //     toast.error("Le nombre d'utilisateurs doit être supérieur à 0");
+        //     return false;
+        // }
+        if (adress === '') {
+            toast.info('Adresse est requise');
+            return false;
+        }
+        if (phone === '') {
+            toast.info('Téléphone est requis');
+            return false;
+        }
+        if (email === '') {
+            toast.info('Email est requis');
+            return false;
+        }
+        return true;
+    };
+
     const handleSubmit = async () => {
+        if (!handleCheck()) return;
         const session = await getClientSession();
         const token = session?.token;
         // if (!token) {
@@ -53,7 +97,27 @@ export default function AddCompanyDialog() {
         //     return;
         // }
 
+        setLoading(true);
+
         const data = { name, industry, nb_users, phone, email, address: adress };
+
+        // Optimistic update
+        const tempId = `temp-${Date.now()}`;
+        const optimisticCompany = {
+            id: tempId,
+            name,
+            industry,
+            nb_users,
+            address: adress,
+            phone,
+            email,
+            status: 'active',
+            isActive: true,
+            created_at: new Date(),
+            updated_at: new Date(),
+        };
+        useCompaniesStore.getState().addCompany(optimisticCompany);
+
         try {
             const response = await fetch(`${API_URL}/tenants/creation/`, {
                 method: 'POST',
@@ -67,7 +131,7 @@ export default function AddCompanyDialog() {
             if (response.ok) {
                 toast.success('Entreprise ajoutée avec succès');
 
-                setOpen(false);
+                currentOnOpenChange(false);
                 // reset form
                 setName('');
                 setIndustry('');
@@ -76,23 +140,30 @@ export default function AddCompanyDialog() {
                 setEmail('');
             } else {
                 toast.error('Échec de l\'ajout de l\'entreprise');
+                useCompaniesStore.getState().removeCompany(tempId);
             }
         } catch (error) {
             console.error(error);
             toast.error('Erreur');
+            useCompaniesStore.getState().removeCompany(tempId);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button className=" bg-primary hover:bg-primary/90 text-white">
-                    <Icon icon="mdi:plus" className="" />
-                    Nouvelle entreprise
-                </Button>
-            </DialogTrigger>
+        <Dialog open={currentOpen} onOpenChange={currentOnOpenChange}>
+            {!isControlled && (
+                <DialogTrigger asChild>
+                    <Button className=" bg-primary hover:bg-primary/90 text-white">
+                        <Icon icon="mdi:plus" className="" />
+                        Nouvelle entreprise
+                    </Button>
+                </DialogTrigger>
+            )}
             <DialogContent>
                 <DialogHeader>
+                    <Icon icon="f7:building-2" className="text-5xl mb-2 mx-auto" />
                     <DialogTitle>Ajouter une entreprise</DialogTitle>
                     <DialogDescription>Remplissez ces champs pour ajouter une entreprise.</DialogDescription>
                 </DialogHeader>
@@ -148,7 +219,10 @@ export default function AddCompanyDialog() {
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button onClick={handleSubmit}>Ajouter</Button>
+                    <Button onClick={handleSubmit} disabled={loading}>
+                        {loading ? <Spinner />  : <Icon icon="lucide:plus" className="text-xl" />}
+                        {loading ? "Ajout en cours..." : "Ajouter l'entreprise"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
