@@ -30,8 +30,8 @@ export default function AgentsPage() {
       });
       setAgents(res.data);
 
-      // DEBUG
-      console.log("Fetched agents:", res.data);
+      // // DEBUG
+      // console.log("Fetched agents:", res.data);
     } catch (err) {
       console.error('Failed to fetch agents:', err);
       setError('Failed to fetch agents');

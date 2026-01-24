@@ -21,8 +21,8 @@ import Link from "next/link";
 
 export function AgentDetails({ agent, open, onOpenChange }: { agent: Agent | null, open: boolean, onOpenChange: (open: boolean) => void }) {
 
-    // DEBUG
-    console.log("Agent Details Dialog Opened for:", agent);
+    // // DEBUG
+    // console.log("Agent Details Dialog Opened for:", agent);
 
     const formatDate = (date: string | Date) => {
         return new Date(date).toLocaleDateString('fr-FR', {
@@ -42,9 +42,9 @@ export function AgentDetails({ agent, open, onOpenChange }: { agent: Agent | nul
                         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                             <Icon icon="lucide:user" className="w-6 h-6 text-muted-foreground" />
                         </div>
-                        <div>
-                            <DialogTitle className="text-2xl font-bold">{agent?.first_name} {agent?.last_name}</DialogTitle>
-                            <Badge variant="outline" className="mt-1">
+                        <div >
+                            <DialogTitle className="text-2xl font-bold ">{agent?.first_name} {agent?.last_name}</DialogTitle>
+                            <Badge variant="default" className="mt-1">
                                 {agent?.role_name}
                             </Badge>
                         </div>
@@ -65,20 +65,22 @@ export function AgentDetails({ agent, open, onOpenChange }: { agent: Agent | nul
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-3">
                                     <div>
-                                        <label className="text-sm font-medium text-muted-foreground">Prénom</label>
-                                        <p className="text-base font-medium">{agent.first_name}</p>
+                                        <label className="text-sm font-medium text-muted-foreground">Identité</label>
+                                        <p className="text-base font-medium">{agent.first_name} {agent.last_name}</p>
                                     </div>
-                                    <div>
+                                    {/* <div>
                                         <label className="text-sm font-medium text-muted-foreground">Nom</label>
                                         <p className="text-base font-medium">{agent.last_name}</p>
-                                    </div>
+                                    </div> */}
+
+
                                     <div>
-                                        <label className="text-sm font-medium text-muted-foreground">ID</label>
+                                        <label className="text-sm font-medium text-muted-foreground">Identifiant d&apos;agent</label>
                                         <p className="font-mono text-sm bg-muted px-2 py-1 rounded">{agent.id}</p>
                                     </div>
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-2">
                                         <label className="text-sm font-medium text-muted-foreground">Rôle</label>
-                                        <Badge variant="outline">
+                                        <Badge variant="default">
                                             {agent.role_name}
                                         </Badge>
                                     </div>
@@ -126,7 +128,7 @@ export function AgentDetails({ agent, open, onOpenChange }: { agent: Agent | nul
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Date d&apos;inscription</label>
+                                    <label className="text-sm font-medium text-muted-foreground">Date d&apos;ajout</label>
                                     <p className="text-base">{formatDate(agent.date_joined)}</p>
                                 </div>
                             </div>

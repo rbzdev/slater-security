@@ -6,6 +6,7 @@ export interface Agent {
     first_name: string;
     last_name: string;
     role_name: string;
+    role_id?: number;
     password: string;
     date_joined: Date;
     tenant_name?: string;

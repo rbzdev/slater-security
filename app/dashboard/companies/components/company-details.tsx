@@ -77,7 +77,7 @@ export function CompanyDetails({ company, open, onOpenChange }: { company: Compa
                                         <p className="text-base font-medium">{company.name}</p>
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium text-muted-foreground">UUID</label>
+                                        <label className="text-sm font-medium text-muted-foreground">Identifiant unique</label>
                                         <p className="font-mono text-sm bg-muted px-2 py-1 rounded">{company.id}</p>
                                     </div>
                                     <div className="flex justify-between">

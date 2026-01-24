@@ -21,8 +21,8 @@ import Link from "next/link";
 
 export function DroneDetails({ drone, open, onOpenChange }: { drone: Drone | null, open: boolean, onOpenChange: (open: boolean) => void }) {
 
-    // DEBUG
-    console.log("Drone Details Dialog Opened for:", drone);
+    // // DEBUG
+    // console.log("Drone Details Dialog Opened for:", drone);
 
     const formatDate = (date: string | Date) => {
         return new Date(date).toLocaleDateString('fr-FR', {

@@ -18,10 +18,12 @@ import {
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/loader";
 import { DroneDetails } from "./drone-details";
 import { DroneEdit } from "./drone-edit";
 
@@ -34,6 +36,8 @@ export default function DronesList() {
     const [selectedDroneForDetails, setSelectedDroneForDetails] = useState<any>(null);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [droneToDelete, setDroneToDelete] = useState<any>(null);
 
     // Delete a drone via his ID
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -81,6 +85,18 @@ export default function DronesList() {
     const handleEditDrone = (drone: any) => {
         setSelectedDroneForDetails(drone);
         setIsEditDialogOpen(true);
+    };
+
+    const handleDeleteClick = (drone: any) => {
+        setDroneToDelete(drone);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!droneToDelete) return;
+        await handleDelete(droneToDelete.id);
+        setIsDeleteDialogOpen(false);
+        setDroneToDelete(null);
     };
 
     // DEBUG 
@@ -137,13 +153,13 @@ export default function DronesList() {
                                 </td>
                                 <td className="border border-accent px-4 py-2">
                                     <span className={`px-2 py-1 rounded-full text-sm flex items-center gap-1 w-fit ${
-                                        drone.status === "actif" ? 'bg-green-100 text-green-800' :
+                                        drone.status === "active" ? 'bg-green-300/50 dark:bg-green-300 text-green-800 border border-green-500' :
                                         drone.status === "idle" ? 'bg-yellow-100 text-yellow-800' :
                                         drone.status === "maintenance" ? 'bg-red-100 text-orange-800' :
                                         drone.status === "on_mission" ? 'bg-green-500/20 text-emerald-500 border border-emerald-300'  :
                                         'bg-gray-100 text-gray-800'
                                     }`}>
-                                        {drone.status === "actif" ? (
+                                        {drone.status === "active" ? (
                                             <>
                                                 <Icon icon="mdi:check-circle" className="h-4 w-4" />
                                                 Actif
@@ -175,13 +191,13 @@ export default function DronesList() {
 
                                         <div className="flex">
                                             <Button variant={"ghost"} onClick={() => handleViewDrone(drone)}>
-                                                <Icon icon="solar:eye-bold" className="mr-2 h-4 w-4" />
+                                                <Icon icon="solar:eye-bold" className="text-xl" />
                                             </Button>
                                             <Button variant={"ghost"} onClick={() => handleEditDrone(drone)}>
-                                                <Icon icon="basil:edit-outline" className="mr-2 h-4 w-4" />
+                                                <Icon icon="basil:edit-outline" className="text-xl" />
                                             </Button>
-                                            <Button variant={"ghost"} onClick={() => handleDelete(drone.id)} disabled={deletingId === drone.id}>
-                                                <Icon icon="ant-design:delete-outlined" className="mr-2 h-4 w-4" />
+                                            <Button variant={"ghost"} onClick={() => handleDeleteClick(drone)} disabled={deletingId === drone.id}>
+                                                <Icon icon="ant-design:delete-outlined" className="text-xl" />
                                             </Button>
                                         </div>
                                 
@@ -231,6 +247,26 @@ export default function DronesList() {
 
                 {/* Drone Edit Dialog */}
                 <DroneEdit drone={selectedDroneForDetails} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
+
+                {/* Delete Confirmation Dialog */}
+                <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirmer la suppression</DialogTitle>
+                            <DialogDescription>
+                                Êtes-vous sûr de vouloir supprimer le drone <span className="text-primary font-bold">{droneToDelete?.name}</span> ? Cette action est irréversible.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={deletingId !== null}>
+                                Annuler
+                            </Button>
+                            <Button variant="destructive" onClick={confirmDelete} disabled={deletingId !== null}>
+                                {deletingId !== null ? <><Spinner /> Suppression...</> : 'Supprimer'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );

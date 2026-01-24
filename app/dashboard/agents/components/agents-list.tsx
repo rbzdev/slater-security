@@ -35,7 +35,6 @@ interface AgentsListProps {
 
 export default function AgentsList({ agents }: AgentsListProps) {
     const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [shownPasswords, setShownPasswords] = useState<{ [key: number]: boolean }>({});
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -45,10 +44,6 @@ export default function AgentsList({ agents }: AgentsListProps) {
     // console.log('Agents received in AgentsList:', agents);
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-    const togglePasswordVisibility = (agentId: number) => {
-        setShownPasswords(prev => ({ ...prev, [agentId]: !prev[agentId] }));
-    };
 
     const handleViewAgent = (agent: Agent) => {
         setSelectedAgent(agent);
@@ -110,7 +105,6 @@ export default function AgentsList({ agents }: AgentsListProps) {
                             <th className="border border-accent px-4 py-2 text-left">Email</th>
                             <th className="border border-accent px-4 py-2 text-left">Prénom</th>
                             <th className="border border-accent px-4 py-2 text-left">Nom</th>
-                            <th className="border border-accent px-4 py-2 text-left">Mot de passe</th>
                             <th className="border border-accent px-4 py-2 text-left">Rôle</th>
                             <th className="border border-accent px-4 py-2 text-left">Entreprise</th>
                             <th className="border border-accent px-4 py-2 text-left">Actions</th>
@@ -123,20 +117,6 @@ export default function AgentsList({ agents }: AgentsListProps) {
                                 <td className="border border-accent px-4 py-2">{agent.email}</td>
                                 <td className="border border-accent px-4 py-2">{agent.first_name}</td>
                                 <td className="border border-accent px-4 py-2">{agent.last_name}</td>
-                                <td className="border border-accent px-4 py-2 pr-2 relative">
-                                    
-                                   <span className="line-clamp-1  "> {shownPasswords[agent.id] ? agent.password : '••••••'} </span>
-
-                                    {/* <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    > */}
-                                        <Icon icon={shownPasswords[agent.id] ? "mdi:eye-off" : "mdi:eye"} 
-                                    onClick={() => togglePasswordVisibility(agent.id)}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-2xl backdrop-blur cursor-pointer active:scale-95 transition-all h-full" />
-                                    {/* </Button> */}
-                                </td>
-
                                 <td className="border border-accent px-4 py-2">{agent.role_name}</td>
                                 <td className="border border-accent px-4 py-2">{agent.tenant_name || 'N/A'}</td>
                                 <td className="border border-accent px-4 py-2 flex justify-center ">

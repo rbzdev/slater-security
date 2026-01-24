@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // Types
 import { Drone, useDronesStore } from "@/lib/Stores/drones-store";
 import { Spinner } from "@/components/ui/loader";
+import { getClientSession } from "@/lib/actions/user";
 
 interface DroneEditProps {
     drone: Drone | null;
@@ -33,7 +34,7 @@ export function DroneEdit({ drone, open, onOpenChange, onSave }: DroneEditProps)
         name: '',
         serial_number: '',
         model: '',
-        status: '',
+        // status: '',
     });
     const [isLoading, setIsLoading] = useState(false);
 
@@ -44,7 +45,7 @@ export function DroneEdit({ drone, open, onOpenChange, onSave }: DroneEditProps)
                 name: drone.name,
                 serial_number: drone.serial_number,
                 model: drone.model,
-                status: drone.status,
+                // status: drone.status,
             });
         }
     }, [drone]);
@@ -60,16 +61,46 @@ export function DroneEdit({ drone, open, onOpenChange, onSave }: DroneEditProps)
     // Handle Save / Update Drone
     const handleSave = async () => {
         if (!drone) return;
-
         setIsLoading(true);
+
+        // Get session for auth token
+        const session = await getClientSession();
+        const token = session?.token;
+
+        // Determine which fields have been modified
+        const modifiedFields: Partial<typeof formData> = {};
+        const allFields = ['name', 'serial_number', 'model'] as const;
+        
+        for (const field of allFields) {
+            if (formData[field] !== drone[field]) {
+                modifiedFields[field] = formData[field];
+            }
+        }
+
+        // Count modified fields to determine HTTP method
+        const modifiedCount = Object.keys(modifiedFields).length;
+        const totalFields = allFields.length;
+
+        // If no changes, don't make a request
+        if (modifiedCount === 0) {
+            toast.info('Aucune modification effectuée');
+            setIsLoading(false);
+            return;
+        }
+
+        // Use PUT if all fields are modified, PATCH for partial update
+        const method = modifiedCount === totalFields ? 'PUT' : 'PATCH';
+        const requestBody = method === 'PUT' ? formData : modifiedFields;
+
         try {
             const API_URL = process.env.NEXT_PUBLIC_API_URL;
             const response = await fetch(`${API_URL}/drones/${drone.id}/update/`, {
-                method: 'PATCH',
+                method,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(requestBody),
             });
 
             if (!response.ok) {
@@ -93,6 +124,7 @@ export function DroneEdit({ drone, open, onOpenChange, onSave }: DroneEditProps)
             toast.success('Drone mis à jour avec succès');
             onOpenChange(false);
         } catch (error) {
+            console.error('Error updating drone:', error);
             toast.error('Erreur lors de la mise à jour');
         } finally {
             setIsLoading(false);
@@ -141,7 +173,7 @@ export function DroneEdit({ drone, open, onOpenChange, onSave }: DroneEditProps)
                             />
                         </div>
 
-                        <div className="space-y-2 col-span-2">
+                        {/* <div className="space-y-2 col-span-2">
                             <Label htmlFor="status">Statut</Label>
                             <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
                                 <SelectTrigger>
@@ -154,7 +186,7 @@ export function DroneEdit({ drone, open, onOpenChange, onSave }: DroneEditProps)
                                     <SelectItem value="offline">Hors ligne</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
 // UI Components
@@ -20,6 +20,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // Types
 import { Agent, useAgentsStore } from "@/lib/Stores/agents-store";
 import { Spinner } from "@/components/ui/loader";
+import { getClientSession } from "@/lib/actions/user";
+import { Role } from "@/lib/types/role";
 
 interface AgentEditProps {
     agent: Agent | null;
@@ -33,9 +35,50 @@ export function AgentEdit({ agent, open, onOpenChange, onSave }: AgentEditProps)
         first_name: '',
         last_name: '',
         email: '',
-        role_name: '',
+        role_id: '',
     });
+
+    // STATES
+    const [roles, setRoles] = useState<Role[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSelectOpen, setIsSelectOpen] = useState(false);
+
+
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    // Fetch roles function
+    const fetchRoles = useCallback(async () => {
+        const session = await getClientSession();
+        const token = session?.token;
+
+        try {
+            const response = await fetch(`${API_URL}/roles/roles_list/`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+
+                // // DEBUG
+                // console.log("Fetched roles:", data);
+                setRoles(data);
+            } else {
+                toast.error('Échec de récupération des rôles');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Erreur lors de la récupération des rôles');
+        }
+    }, [API_URL]);
+
+    // Fetch roles when select opens and roles are not yet loaded
+    useEffect(() => {
+        if (isSelectOpen && roles.length === 0) {
+            fetchRoles();
+        }
+    }, [isSelectOpen, roles.length, fetchRoles]);
 
     // Populate form data when agent changes
     useEffect(() => {
@@ -44,10 +87,20 @@ export function AgentEdit({ agent, open, onOpenChange, onSave }: AgentEditProps)
                 first_name: agent.first_name,
                 last_name: agent.last_name,
                 email: agent.email,
-                role_name: agent.role_name,
+                role_id: '', // Will be set when roles are loaded
             });
         }
     }, [agent]);
+
+    // Set role_id when roles are loaded and agent is set
+    useEffect(() => {
+        if (agent && roles.length > 0) {
+            const role = roles.find(r => r.name === agent.role_name);
+            if (role) {
+                setFormData(prev => ({ ...prev, role_id: role.id.toString() }));
+            }
+        }
+    }, [agent, roles]);
 
     // Handle input changes
     const handleInputChange = (field: string, value: string) => {
@@ -62,14 +115,24 @@ export function AgentEdit({ agent, open, onOpenChange, onSave }: AgentEditProps)
         if (!agent) return;
 
         setIsLoading(true);
+
+        // Get session for auth token
+        const session = await getClientSession();
+        const token = session?.token;
+
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL;
-            const response = await fetch(`${API_URL}/users/${agent.id}/update/`, {
+            const dataToSend = {
+                ...formData,
+                role_id: parseInt(formData.role_id),
+            };
+
+            const response = await fetch(`${API_URL}/accounts/manager/${agent.id}/`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(dataToSend),
             });
 
             if (!response.ok) {
@@ -143,16 +206,23 @@ export function AgentEdit({ agent, open, onOpenChange, onSave }: AgentEditProps)
                         </div>
 
                         <div className="space-y-2 col-span-2">
-                            <Label htmlFor="role_name">Rôle</Label>
-                            <Select value={formData.role_name} onValueChange={(value) => handleInputChange('role_name', value)}>
+                            <Label htmlFor="role_id">Rôle</Label>
+                            <Select
+                                value={formData.role_id}
+                                onValueChange={(value) => handleInputChange('role_id', value)}
+                                onOpenChange={setIsSelectOpen}
+                            >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Sélectionner le rôle" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="admin">Administrateur</SelectItem>
-                                    <SelectItem value="manager">Manager</SelectItem>
+                                    {roles.map((role, index) => (
+                                        <SelectItem key={index} value={role.id.toString()}>{role.name}</SelectItem>
+                                    ))}
+
+                                    {/* <SelectItem value="manager">Manager</SelectItem>
                                     <SelectItem value="operator">Opérateur</SelectItem>
-                                    <SelectItem value="viewer">Observateur</SelectItem>
+                                    <SelectItem value="viewer">Observateur</SelectItem> */}
                                 </SelectContent>
                             </Select>
                         </div>
